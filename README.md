@@ -24,7 +24,7 @@ This script provides a quick setup for configuring an Arch Linux system to use t
 To use the script, simply run it with root privileges:
 
 ```bash
-git clone https://github.com/yourusername/archlinux-nvidia-scripts.git
+git clone https://github.com/jonathansanfilippo/archlinux-nvidia-scripts.git
 cd archlinux-nvidia-scripts
 chmod +x nvidia-setup.sh
 ./nvidia-setup.sh
