@@ -1,53 +1,107 @@
-Archlinux NVIDIA Scripts
+Archlinux NVIDIA Setup Script
 
-Scripts and configuration tips for using NVIDIA Optimus on Arch Linux with GDM, forcing the use of the NVIDIA GPU only.
-⚙️ Enable NVIDIA DRM KMS
+This script provides a quick setup for configuring an Arch Linux system to use the NVIDIA GPU in "NVIDIA only" mode with Optimus support.
+⚙️ Features
 
-To enable NVIDIA DRM kernel mode setting, you need to add the following kernel parameter:
+    Installs necessary NVIDIA drivers and dependencies.
 
-nvidia_drm.modeset=1
+    Sets up a hook to regenerate the initramfs when NVIDIA packages are installed, upgraded, or removed.
 
-🔧 GRUB
+    Configures X11 to use NVIDIA and Intel GPUs via xrandr.
 
-    Edit the GRUB configuration file:
+    Adds NVIDIA modules (nvidia, nvidia_modeset, nvidia_uvm, nvidia_drm) directly to the mkinitcpio.conf.
 
-sudo nano /etc/default/grub
+    Blacklists the nouveau driver to ensure proper NVIDIA GPU usage.
 
-Add the parameter to the GRUB_CMDLINE_LINUX line:
+    Creates autostart entries for GNOME (GDM greeter and user session) to automatically set up the NVIDIA GPU at login.
 
-GRUB_CMDLINE_LINUX="nvidia-drm.modeset=1"
+🛠️ Prerequisites
 
-Save the file and rebuild the GRUB configuration:
+    Arch Linux system with GDM and an NVIDIA Optimus laptop or desktop.
 
-    sudo grub-mkconfig -o /boot/grub/grub.cfg
+    Ensure you have sudo privileges.
 
-🔧 systemd-boot
+📜 Script Overview
+Installation
 
-If you are using systemd-boot, edit your boot entry file. For example, if your configuration is located at /boot/loader/entries/arch.conf:
+To use the script, simply run it with root privileges:
 
-title   Arch Linux
-linux   /vmlinuz-linux
-initrd  /initramfs-linux.img
-options root=/dev/xxx rw quiet loglevel=3 rd.systemd.show_status=auto rd.udev.log_level=3 nvidia-drm.modeset=1
+git clone https://github.com/yourusername/archlinux-nvidia-scripts.git
+cd archlinux-nvidia-scripts
+chmod +x nvidia-setup.sh
+./nvidia-setup.sh
 
-    Replace /dev/xxx with your actual root partition (e.g. /dev/nvme0n1p2).
+This will:
 
-🔁 Reboot
+    Install NVIDIA packages:
 
-To apply the changes, reboot your system:
+        nvidia, nvidia-utils, nvidia-settings, libva-mesa-driver, and libva-utils.
+
+    Create the pacman hook:
+
+        The script creates a hook in /etc/pacman.d/hooks/nvidia.hook to automatically regenerate the initramfs whenever NVIDIA packages are installed, upgraded, or removed.
+
+    Blacklists the nouveau driver:
+
+        The nouveau driver is blacklisted to ensure that the open-source driver doesn’t conflict with the proprietary NVIDIA driver.
+
+    Set up X11 OutputClass for NVIDIA and Intel:
+
+        The script configures X11 to use the Intel GPU for non-graphical applications and the NVIDIA GPU for graphical tasks.
+
+    Add NVIDIA modules to mkinitcpio.conf:
+
+        Directly adds the necessary NVIDIA modules (nvidia, nvidia_modeset, nvidia_uvm, nvidia_drm) to the MODULES line in /etc/mkinitcpio.conf.
+
+    Create xinitrc for NVIDIA GPU switching:
+
+        The script generates a .xinitrc file in the user's home directory, automatically setting up the NVIDIA GPU at startup.
+
+    Create GNOME autostart entries:
+
+        Adds entries to automatically switch the display provider to NVIDIA when logging into GNOME via GDM.
+
+    Optional: Enable VA-API for Chromium-based browsers:
+
+        Uncomment lines in chrome-flags.conf to enable hardware acceleration.
+
+Rebuilding Initramfs
+
+The script will automatically run mkinitcpio -P to rebuild the initramfs after making changes to the kernel modules.
+Reboot
+
+After the script finishes, reboot your system to apply all changes.
 
 reboot
 
-✅ Additional Notes
+🔧 Troubleshooting
 
-    Ensure that the proprietary NVIDIA driver is installed:
+    Blacklisting nouveau fails:
 
-sudo pacman -S nvidia
+        Ensure that the blacklist-nvidia-nouveau.conf file is correctly placed in /etc/modprobe.d/.
 
-For hybrid graphics (Optimus laptops), you may want to use tools like:
+    X11 not detecting the NVIDIA GPU:
 
-    nvidia-prime
+        Ensure the proper configuration is in /etc/X11/xorg.conf.d/10-nvidia-drm-outputclass.conf.
 
-    optimus-manager
+    Hardware acceleration in Chrome not working:
 
-This configuration is intended for setups where the NVIDIA GPU is always active (i.e. "NVIDIA only" mode).
+        Check that the chrome-flags.conf file is correctly updated for VA-API support.
+
+📂 File Locations
+
+    NVIDIA Hook: /etc/pacman.d/hooks/nvidia.hook
+
+    Blacklist nouveau: /etc/modprobe.d/blacklist-nvidia-nouveau.conf
+
+    X11 Configuration: /etc/X11/xorg.conf.d/10-nvidia-drm-outputclass.conf
+
+    Autostart entries:
+
+        /usr/share/gdm/greeter/autostart/optimus.desktop
+
+        /etc/xdg/autostart/optimus.desktop
+
+    xinitrc: $HOME/.xinitrc
+
+    Chrome flags: $HOME/.config/chrome-flags.conf
