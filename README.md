@@ -3,6 +3,9 @@
 
 This script provides a quick setup for configuring an Arch Linux system to use the NVIDIA GPU in "NVIDIA only" mode with Optimus support.
 
+![Screenshot From 2025-04-07 09-44-54](https://github.com/user-attachments/assets/d39c63bf-92f9-44f9-bfc9-5cd0471475e3)
+
+
 ## ⚙️ Features
 
 - Installs necessary NVIDIA drivers and dependencies.
